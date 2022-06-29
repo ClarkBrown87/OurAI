@@ -1,24 +1,35 @@
-import cv2
+import cv2 as cv
 import keras
 import tensorflow as tf
+from main import cap_img
+
+emotions = ['Злой', 'Отвращение', 'В ужасе', 'Счастливый', 'Нейтральный', 'Печальный', 'Удивленный']
 
 
-def prepare(filepath):
+def prepare(img):
     IMG_SIZE = 48
-    img_array = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
-    new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
+    img_array = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    new_array = cv.resize(img_array, (IMG_SIZE, IMG_SIZE))
     return new_array.reshape(-1, IMG_SIZE, IMG_SIZE, 1)
 
 
-img_path = 'C:/MyProjects/pythonProject/input/test/fear/PrivateTest_166793.jpg'
+def call_predict(img_path):
 
-x = tf.keras.Input(shape=(48, 48, 1))
-y = tf.keras.layers.Dense(16, activation='softmax')(x)
-model = tf.keras.Model(x, y)
-model.summary()
+    img = cap_img(img_path)
 
-model = keras.models.load_model('ferNet.h5')
+    x = tf.keras.Input(shape=(48, 48, 1))
+    y = tf.keras.layers.Dense(16, activation='softmax')(x)
+    model = tf.keras.Model(x, y)
+    model.summary()
 
-preds = model.predict([prepare(img_path)])
+    model = keras.models.load_model('ferNet.h5')
 
-print(preds)
+    preds = model.predict([prepare(img)])
+
+    max_happines = max(preds[0])
+    for i in range(len(preds[0])):
+        if preds[0][i] == max_happines:
+            return emotions[i]
+
+# print(call_predict('imgs/1.jpg'))
+

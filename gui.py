@@ -4,7 +4,9 @@ from tkinter import *
 import cv2 as cv
 from PIL import Image, ImageTk
 from tkinter import filedialog
+from test import call_predict
 
+output = ''
 
 def main_window():
     # Создание главного окна
@@ -13,18 +15,18 @@ def main_window():
     root.geometry("600x480+650+250")
     root.resizable(False, False)
 
-    def photo_window(event): # Событие для открытия окна фото
+    def photo_window(event):  # Событие для открытия окна фото
         root.destroy()
         by_photo()
 
-    def camera_window(event): # Событие для открытия окна камеры
+    def camera_window(event):  # Событие для открытия окна камеры
         root.destroy()
         by_camera()
 
-    canvas = Canvas(root, width=600, height=350) # Вставка изображения
+    canvas = Canvas(root, width=600, height=350)  # Вставка изображения
     canvas.pack()
     home_page_pic = PhotoImage(file="imgs/homepagepic.png")
-    canvas.create_image(300, 175, image=home_page_pic) # Тут размер
+    canvas.create_image(300, 175, image=home_page_pic)  # Тут размер
 
     # Создание кнопок
     camera_btn = tk.Button(root, text="По камере", fg="#ffffff", bg="#708090", pady="10", font="20")
@@ -42,31 +44,36 @@ def main_window():
 
 
 def by_photo():
+    global output
     # Создание окна фото
     photo_window = Tk()
     photo_window.geometry("600x480+650+250")
     photo_window.resizable(False, False)
     photo_window.title('По фото')
 
-    def back_to_main(event): # Событие кнопки назад
+
+    def back_to_main(event):  # Событие кнопки назад
         photo_window.destroy()
         main_window()
 
-    def openfn(): # Загрузка изображения из компа
+    def openfn():  # Загрузка изображения из компа
         filename = filedialog.askopenfilename(title='open')
         return filename
 
-    def open_img(): # Конвертация изображения для ткинтера
+    def open_img():  # Конвертация изображения для ткинтера
+        global output
         x = openfn()
+        output = call_predict(x)
+        print(output)
         img = Image.open(x)
         img = img.resize((450, 280), Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img)
-        panel = Label(photo_window, image=img) # Сюда вставляется изображение
+        panel = Label(photo_window, image=img)  # Сюда вставляется изображение
         panel.image = img
-        panel.place(x=70, y=15) # Расположение изображения
+        panel.place(x=70, y=15)  # Расположение изображения
 
     # Создание виджетов
-    emotion_lb = Label(borderwidth = 2, relief="sunken", pady=10, font="20", text="Тут будет эмоция")
+    emotion_lb = Label(borderwidth=2, relief="sunken", pady=10, font="20", text=output)
     back_btn = Button(photo_window, text="Назад", pady="10", font="20", fg="#ffffff", bg="#708090")
     open_btn = Button(photo_window, text='Загрузить изображение', command=open_img, pady="10", font="20", fg="#ffffff", bg="#708090")
 
@@ -75,12 +82,12 @@ def by_photo():
     open_btn.pack(side=BOTTOM, fill=X)
     emotion_lb.pack(side=BOTTOM, fill=X)
 
-    back_btn.bind('<Button->', back_to_main) # Событие кнопки назад
+    back_btn.bind('<Button->', back_to_main)  # Событие кнопки назад
 
     photo_window.mainloop()
 
 
-def by_camera(): # Нужно подогнать раземер камеры, не знаю где это делается
+def by_camera():  # Нужно подогнать раземер камеры, не знаю где это делается
     cap = cv.VideoCapture(0)
     cap.set(3, 500)
     cap.set(4, 300)
