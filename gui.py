@@ -6,7 +6,6 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 from test import call_predict
 
-output = ''
 
 def main_window():
     # Создание главного окна
@@ -44,7 +43,6 @@ def main_window():
 
 
 def by_photo():
-    global output
     # Создание окна фото
     photo_window = Tk()
     photo_window.geometry("600x480+650+250")
@@ -61,9 +59,9 @@ def by_photo():
         return filename
 
     def open_img():  # Конвертация изображения для ткинтера
-        global output
         x = openfn()
         output = call_predict(x)
+        emotion_text.set(output)
         print(output)
         img = Image.open(x)
         img = img.resize((450, 280), Image.ANTIALIAS)
@@ -73,7 +71,8 @@ def by_photo():
         panel.place(x=70, y=15)  # Расположение изображения
 
     # Создание виджетов
-    emotion_lb = Label(borderwidth=2, relief="sunken", pady=10, font="20", text=output)
+    emotion_text = StringVar()
+    emotion_lb = Label(borderwidth=2, relief="sunken", pady=10, font="20", textvariable=emotion_text)
     back_btn = Button(photo_window, text="Назад", pady="10", font="20", fg="#ffffff", bg="#708090")
     open_btn = Button(photo_window, text='Загрузить изображение', command=open_img, pady="10", font="20", fg="#ffffff", bg="#708090")
 
@@ -96,7 +95,7 @@ def by_camera():  # Нужно подогнать раземер камеры, �
     # Создание окна камеры
     camera_window = Tk()
     camera_window.geometry("600x480+650+250")
-    camera_window.resizable(False, False)
+    # camera_window.resizable(False, False)
     camera_window.title('По камере')
 
     lmain = tk.Label(camera_window) # Место, куда вставляется изображение
@@ -108,25 +107,30 @@ def by_camera():  # Нужно подогнать раземер камеры, �
 
     def show_frame(): # Твой код
         _, frame = cap.read()
+        img_face = frame
         frame = cv.flip(frame, 1)
         cv2image = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         result = faces.detectMultiScale(cv2image, scaleFactor=1.07, minNeighbors=4)
 
         for (x, y, w, h) in result:
             cv.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), thickness=3)
-
-        img = Image.fromarray(frame) # Конвертирует изображение для поддержки ткинтером
+        # output = call_predict(img_face)
+        # position = ((result[0][1]*2+result[0][3])//2, result[0][0])
+        # cv.putText(frame, output, position, cv.FONT_HERSHEY_SIMPLEX, 1, (209, 80, 0, 255), 3)
+        cv2image = cv.cvtColor(frame, cv.COLOR_BGR2RGBA)
+        img = Image.fromarray(cv2image).resize((600, 440), Image.ANTIALIAS) # Конвертирует изображение для поддержки ткинтером
         imgtk = ImageTk.PhotoImage(image=img)
         lmain.imgtk = imgtk
         lmain.configure(image=imgtk)
         lmain.after(10, show_frame)
+        camera_window.mainloop()
 
     back_btn = Button(camera_window, text="Назад", pady="10", font="20", fg="#ffffff", bg="#708090") # Кнопка назад
     back_btn.bind('<Button->', back_to_main) # Событие для кнопки
     back_btn.pack(side=BOTTOM, fill=X) # Расположение кнорки
 
     show_frame()
-    camera_window.mainloop()
+
 
 
 if __name__ == '__main__':

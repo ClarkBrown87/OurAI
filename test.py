@@ -2,6 +2,8 @@ import cv2 as cv
 import keras
 import tensorflow as tf
 from main import cap_img
+from keras.models import Sequential
+from keras.layers import Dense, Activation
 
 emotions = ['Злой', 'Отвращение', 'В ужасе', 'Счастливый', 'Нейтральный', 'Печальный', 'Удивленный']
 
